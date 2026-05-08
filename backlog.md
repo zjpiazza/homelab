@@ -27,7 +27,7 @@
 ## Talos/Kubernetes Cluster (via Flux)
 
 - [x] Install Cilium CNI (v1.19.3, with kube-proxy)
-- [ ] Transition Cilium Helm release to Flux management
+- [x] Transition Cilium Helm release to Flux management
 - [ ] Set up persistent storage (Rook/Ceph or Longhorn)
 - [ ] Deploy ingress controller (Traefik or NGINX)
 - [ ] Set up certificate management (cert-manager)

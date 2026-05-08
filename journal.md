@@ -252,4 +252,26 @@ homelab/
         └── flux-system/  # Flux GitOps manifests
 ```
 
+---
+
+## Session 2: Cilium Flux Migration (May 8, 2026)
+
+**Goal:** Migrate Cilium CNI from standalone Helm to Flux management.
+
+### Issues Resolved
+
+1. **Flux controllers crash-looping (exit code 2):** Pods were created when Flannel was the active CNI (before Cilium). After Cilium took over, old pods had stale network namespaces causing crashes. Fixed by deleting pods and letting Deployments recreate them with proper Cilium networking.
+
+2. **Flannel/Cilium CNI conflict:** Talos was configured with `cni.name: none` but Flannel DaemonSet was never removed after Cilium install. Cilium backed up Flannel's CNI config (`10-flannel.conflist.cilium_bak`). Both CNIs coexisted. Fixed by deleting the Flannel DaemonSet.
+
+3. **Cilium HelmRelease adoption:** Flux couldn't adopt the existing `cilium` Helm release (stored in `kube-system`) when the HelmRelease was in `flux-system`. Moved HelmRelease to `kube-system` namespace with `targetNamespace: kube-system`. Old standalone release was `helm uninstall`ed; Flux created a fresh install.
+
+### Current State
+
+- Cilium v1.19.3 managed by Flux (HelmRelease in `kube-system`)
+- Helm release name: `kube-system-cilium`
+- Flannel DaemonSet removed
+- All Flux controllers healthy
+- Cilium healthy across all 3 nodes
+
 **GitHub:** github.com/zjpiazza/homelab
