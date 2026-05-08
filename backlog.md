@@ -8,6 +8,7 @@
 - [x] Cluster VIP (192.168.1.240)
 - [x] UPS detected and NUT installed (CyberPower CP1500PFCRM2U)
 - [x] Flux v2 bootstrapped from GitHub
+- [x] Cilium CNI installed (v1.19.3, with kube-proxy)
 
 ## Rack/Hardware
 
@@ -23,9 +24,10 @@
 - [ ] Secure atlas (firewall, fail2ban, etc.)
 - [ ] Set up DNS/internal domain (Pi-hole, AdGuard, or CoreDNS)
 
-## Talos/Kubernetes Cluster (managed via Flux)
+## Talos/Kubernetes Cluster (via Flux)
 
-- [ ] Install CNI (replace default Flannel with Cilium or Calico)
+- [x] Install Cilium CNI (v1.19.3, with kube-proxy)
+- [ ] Transition Cilium Helm release to Flux management
 - [ ] Set up persistent storage (Rook/Ceph or Longhorn)
 - [ ] Deploy ingress controller (Traefik or NGINX)
 - [ ] Set up certificate management (cert-manager)
