@@ -14,9 +14,33 @@ spec:
         name: cilium
         namespace: flux-system
       interval: 1h
+      version: 1.19.3
   values:
     ipam:
       mode: kubernetes
+    kubeProxyReplacement: false
+    securityContext:
+      capabilities:
+        ciliumAgent:
+          - CHOWN
+          - KILL
+          - NET_ADMIN
+          - NET_RAW
+          - IPC_LOCK
+          - SYS_ADMIN
+          - SYS_RESOURCE
+          - DAC_OVERRIDE
+          - FOWNER
+          - SETGID
+          - SETUID
+        cleanCiliumState:
+          - NET_ADMIN
+          - SYS_ADMIN
+          - SYS_RESOURCE
+    cgroup:
+      autoMount:
+        enabled: false
+      hostRoot: /sys/fs/cgroup
     k8sServiceHost: 192.168.1.240
     k8sServicePort: 6443
     rollOutCiliumPods: true
