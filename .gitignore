@@ -1,0 +1,3 @@
+# Downloaded Talos boot assets (can be re-downloaded via make)
+pxe/assets/*
+!pxe/assets/.gitkeep

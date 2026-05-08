@@ -1,0 +1,27 @@
+#!ipxe
+# -------------------------------------------------------------------
+# iPXE boot script for Talos Linux
+# Fetched by iPXE from http://pxe-server/pxe/boot.ipxe after
+# chainloading via TFTP.
+# -------------------------------------------------------------------
+
+set pxe-server http://192.168.1.229
+set talos-version v1.13.0
+set talos-kernel ${pxe-server}/talos/${talos-version}/vmlinuz
+set talos-initrd ${pxe-server}/talos/${talos-version}/initramfs.xz
+set config-url ${pxe-server}/config/${net0/mac:hexhyp}
+
+echo "=========================================="
+echo "  Booting Talos Linux ${talos-version}"
+echo "  MAC: ${net0/mac:hexhyp}"
+echo "  Config: ${config-url}"
+echo "=========================================="
+
+kernel ${talos-kernel} \
+    talos.platform=metal \
+    console=tty0 \
+    panic=0 \
+    talos.config=${config-url}
+
+initrd ${talos-initrd}
+boot
