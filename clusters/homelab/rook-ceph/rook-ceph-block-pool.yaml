@@ -4,7 +4,6 @@ metadata:
   name: rook-ceph-blockpool
   namespace: rook-ceph
 spec:
-  name: replicated-pool
   replicated:
     size: 3
     requireSafeReplicaSize: true
