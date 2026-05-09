@@ -5,3 +5,4 @@ resources:
 - gotk-sync.yaml
 - cilium-helm-repository.yaml
 - cilium-helm-release.yaml
+- rook-ceph-kustomization.yaml

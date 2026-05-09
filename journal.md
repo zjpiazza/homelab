@@ -274,4 +274,30 @@ homelab/
 - All Flux controllers healthy
 - Cilium healthy across all 3 nodes
 
+---
+
+## Session 3: Rook/Ceph Persistent Storage (May 8, 2026)
+
+**Goal:** Deploy Rook/Ceph for persistent storage, managed via Flux.
+
+### Deployment
+
+- Rook operator v1.19.5 installed via Flux HelmRelease in `rook-ceph` namespace
+- CephCluster configured with loop device OSDs (`allowLoopDevices: true`) since nodes have single NVMe OS disks
+- 3 monitors, 2 managers, OSDs on all 3 nodes
+- CephBlockPool `replicated-pool` with replica size 3
+- StorageClass `rook-ceph-block` for PVCs
+
+### Flux Structure
+
+- New directory `clusters/homelab/rook-ceph/` with kustomization
+- Flux Kustomization CR in flux-system that depends on root `flux-system` Kustomization
+- Tracks HelmRelease in `rook-ceph` namespace (HelmRepository in `flux-system`)
+
+### Notes
+
+- Ceph v19.2.3 (Squid) - latest stable
+- K8s v1.36.0 is slightly beyond Rook's official v1.35 support, but expected to work
+- `allowLoopDevices: true` enables OSDs backed by files in `/var/lib/rook`
+
 **GitHub:** github.com/zjpiazza/homelab

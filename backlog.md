@@ -28,7 +28,8 @@
 
 - [x] Install Cilium CNI (v1.19.3, with kube-proxy)
 - [x] Transition Cilium Helm release to Flux management
-- [ ] Set up persistent storage (Rook/Ceph or Longhorn)
+- [x] Set up persistent storage (Rook/Ceph)
+- [ ] Verify Rook/Ceph cluster health and storage class
 - [ ] Deploy ingress controller (Traefik or NGINX)
 - [ ] Set up certificate management (cert-manager)
 - [ ] Deploy monitoring stack (Prometheus + Grafana)

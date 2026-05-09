@@ -1,3 +1,6 @@
+# Excalidraw MCP server logs
+excalidraw.log
+
 # Downloaded Talos boot assets (can be re-downloaded via make)
 pxe/assets/*
 !pxe/assets/.gitkeep
