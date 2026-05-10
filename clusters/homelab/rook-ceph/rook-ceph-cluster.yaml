@@ -26,9 +26,19 @@ spec:
     maxLogSize: 500M
   storage:
     useAllNodes: true
-    useAllDevices: true
+    useAllDevices: false
     config:
       osdsPerDevice: "1"
+    nodes:
+      - name: nova
+        directories:
+          - path: /var/lib/rook/osd1
+      - name: orbit
+        directories:
+          - path: /var/lib/rook/osd1
+      - name: comet
+        directories:
+          - path: /var/lib/rook/osd1
   disruptionManagement:
     managePodBudgets: true
     osdMaintenanceTimeout: 30
