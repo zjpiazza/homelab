@@ -41,3 +41,4 @@ spec:
     daemonHealth:
       mon:
         interval: 45s
+

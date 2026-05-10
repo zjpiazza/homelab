@@ -6,5 +6,5 @@ metadata:
 spec:
   replicated:
     size: 3
-    requireSafeReplicaSize: true
+    requireSafeReplicaSize: false
   enableRBDStats: true
