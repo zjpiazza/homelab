@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: rook-loop-setup
+  namespace: rook-ceph
+spec:
+  selector:
+    matchLabels:
+      app: rook-loop-setup
+  template:
+    metadata:
+      labels:
+        app: rook-loop-setup
+    spec:
+      hostPID: true
+      hostNetwork: true
+      containers:
+        - name: setup
+          image: busybox:latest
+          command:
+            - sh
+            - -c
+            - |
+              if [ ! -f /var/lib/rook/osd.img ]; then
+                echo "Creating OSD loop file..."
+                dd if=/dev/zero of=/var/lib/rook/osd.img bs=1M count=100000
+                echo "Done creating OSD file"
+              else
+                echo "OSD file already exists"
+              fi
+              sleep infinity
+          securityContext:
+            privileged: true
+          volumeMounts:
+            - name: rook-data
+              mountPath: /var/lib/rook
+      volumes:
+        - name: rook-data
+          hostPath:
+            path: /var/lib/rook
+      tolerations:
+        - operator: Exists
