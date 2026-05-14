@@ -8,3 +8,4 @@ resources:
 - cilium-rbac.yaml
 - rook-ceph-setup-kustomization.yaml
 - rook-ceph-kustomization.yaml
+- hermes-kustomization.yaml

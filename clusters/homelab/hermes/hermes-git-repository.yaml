@@ -1,0 +1,21 @@
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: GitRepository
+metadata:
+  name: hermes-agent-helm-chart
+  namespace: flux-system
+spec:
+  interval: 1h
+  url: https://github.com/ultraworkers/hermes-agent-helm-chart.git
+  ref:
+    # Pinned to main @ 2026-04-12. Bump deliberately after reviewing upstream changes.
+    commit: e3b685d4d0288668a37216435742cd0a659ebc6c
+  ignore: |
+    # Exclude everything by default
+    /*
+    # Re-include only chart contents
+    !/Chart.yaml
+    !/values.yaml
+    !/values.schema.json
+    !/templates/**
+    !/crds/**
+    !/.helmignore

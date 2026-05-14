@@ -1,0 +1,105 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: hermes
+  namespace: hermes
+spec:
+  interval: 15m
+  timeout: 10m
+  targetNamespace: hermes
+  releaseName: hermes
+  chart:
+    spec:
+      # Chart lives at the repo root; no chart name is needed when using
+      # a GitRepository source pointed at a single chart, but the field is
+      # required by the schema, so we pass the chart directory ("."):
+      chart: "."
+      sourceRef:
+        kind: GitRepository
+        name: hermes-agent-helm-chart
+        namespace: flux-system
+      reconcileStrategy: Revision
+  install:
+    crds: CreateReplace
+    remediation:
+      retries: 2
+  upgrade:
+    crds: CreateReplace
+    remediation:
+      retries: 2
+  values:
+    # --- State safety (chart defaults; kept explicit for clarity) ---
+    replicaCount: 1
+    strategy:
+      type: Recreate
+
+    image:
+      repository: nousresearch/hermes-agent
+      tag: "0.8.0"
+      pullPolicy: IfNotPresent
+
+    # --- Secrets: managed out-of-band via kubectl ---
+    # Create with:
+    #   kubectl -n hermes create secret generic hermes-secrets \
+    #     --from-literal=OPENROUTER_API_KEY=sk-or-...
+    secrets:
+      existingSecret: hermes-secrets
+
+    # --- Persistence via Rook-Ceph block storage ---
+    persistence:
+      enabled: true
+      mountPath: /opt/data
+      accessMode: ReadWriteOnce
+      size: 20Gi
+      storageClass: rook-ceph-block
+
+    # --- Hermes runtime config ---
+    config:
+      values:
+        model:
+          default: anthropic/claude-opus-4.6
+          provider: auto
+          base_url: https://openrouter.ai/api/v1
+        agent:
+          max_turns: 90
+          gateway_timeout: 1800
+          restart_drain_timeout: 60
+          tool_use_enforcement: auto
+        terminal:
+          backend: local
+          cwd: .
+          timeout: 180
+        compression:
+          enabled: true
+        security:
+          redact_secrets: true
+
+    # --- Resources sized for parallel subagent workloads ---
+    resources:
+      requests:
+        cpu: "1"
+        memory: 2Gi
+      limits:
+        cpu: "4"
+        memory: 8Gi
+
+    browser:
+      shm:
+        enabled: true
+        sizeLimit: 2Gi
+
+    # --- No external exposure for now ---
+    service:
+      enabled: false
+    ingress:
+      enabled: false
+    virtualService:
+      enabled: false
+
+    # --- Default to gateway mode (chart default args: gateway run) ---
+    apiServer:
+      enabled: false
+    webhook:
+      enabled: false
+    telegramWebhook:
+      enabled: false
