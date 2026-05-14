@@ -106,6 +106,12 @@ spec:
         env:
           - name: HOME
             value: /opt/data/home
+          # The bootstrap-config initContainer (runs first, as root by
+          # default) creates /opt/data/home/.cache subdirs that uv (running
+          # as uid 10000 here) can't write into. Pin uv's cache to /tmp
+          # (its own emptyDir mount, always writable) to avoid EACCES.
+          - name: UV_CACHE_DIR
+            value: /tmp/uv-cache
         volumeMounts:
           - name: data
             mountPath: /opt/data

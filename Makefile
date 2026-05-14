@@ -2,7 +2,7 @@ ATLAS_IP ?= 192.168.1.229
 TALOS_VERSION ?= v1.13.0
 ARCH ?= amd64
 
-.PHONY: all provision-pxe download-talos status
+.PHONY: all provision-pxe download-talos status tailscale-atlas
 
 all: download-talos
 
@@ -68,3 +68,11 @@ status:
 	@$(ssh-atlas) ls -la /srv/tftp/
 	@echo "--- HTTP assets ---"
 	@$(ssh-atlas) ls -la /srv/http/talos/current/
+
+# Install and authenticate Tailscale on atlas.
+# This is interactive: tailscale prints a login URL you open in any browser.
+tailscale-atlas:
+	@echo "==> Installing Tailscale on atlas ($(ATLAS_IP))..."
+	@scp atlas/scripts/install-tailscale.sh d3adb0y@$(ATLAS_IP):/tmp/install-tailscale.sh
+	@ssh -t -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
+		d3adb0y@$(ATLAS_IP) 'bash /tmp/install-tailscale.sh'
