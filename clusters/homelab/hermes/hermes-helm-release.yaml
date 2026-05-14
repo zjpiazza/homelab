@@ -39,11 +39,23 @@ spec:
       pullPolicy: IfNotPresent
 
     # --- Secrets: managed out-of-band via kubectl ---
-    # Create with:
+    # Create / update with:
     #   kubectl -n hermes create secret generic hermes-secrets \
-    #     --from-literal=OPENROUTER_API_KEY=sk-or-...
+    #     --from-literal=OPENROUTER_API_KEY=sk-or-... \
+    #     --from-literal=TELEGRAM_BOT_TOKEN=123456:ABC... \
+    #     --dry-run=client -o yaml | kubectl apply -f -
+    # The chart wires every key in this Secret onto the pod as an env var
+    # via envFrom, so adding a new key + restarting the pod is enough.
     secrets:
       existingSecret: hermes-secrets
+
+    # --- Messaging platform allowlists ---
+    # Telegram is auto-enabled by Hermes when TELEGRAM_BOT_TOKEN is set in
+    # the Secret above. Using extraEnv (a list, additive) instead of env
+    # (a map override) to keep the chart default env block intact.
+    extraEnv:
+      - name: TELEGRAM_ALLOWED_USERS
+        value: "6786828227"
 
     # --- Persistence via Rook-Ceph block storage ---
     persistence:
