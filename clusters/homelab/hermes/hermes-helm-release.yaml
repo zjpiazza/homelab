@@ -49,13 +49,71 @@ spec:
     secrets:
       existingSecret: hermes-secrets
 
-    # --- Messaging platform allowlists ---
-    # Telegram is auto-enabled by Hermes when TELEGRAM_BOT_TOKEN is set in
-    # the Secret above. Using extraEnv (a list, additive) instead of env
-    # (a map override) to keep the chart default env block intact.
-    extraEnv:
-      - name: TELEGRAM_ALLOWED_USERS
-        value: "6786828227"
+    # --- Messaging platform allowlists & runtime env ---
+    # Telegram auto-enables when TELEGRAM_BOT_TOKEN is set in the Secret.
+    # We must override the chart default env map (not use extraEnv) because
+    # Kubernetes server-side apply rejects duplicate env keys, and the
+    # chart already renders TELEGRAM_ALLOWED_USERS="" from its defaults.
+    # When overriding env, the full map replaces the chart defaults, so
+    # re-list every key we care about keeping.
+    env:
+      WEB_TOOLS_DEBUG: "false"
+      VISION_TOOLS_DEBUG: "false"
+      MOA_TOOLS_DEBUG: "false"
+      IMAGE_TOOLS_DEBUG: "false"
+      HERMES_HUMAN_DELAY_MODE: "off"
+      HERMES_HUMAN_DELAY_MIN_MS: "800"
+      HERMES_HUMAN_DELAY_MAX_MS: "2500"
+      GATEWAY_ALLOW_ALL_USERS: "false"
+      WHATSAPP_ENABLED: "false"
+      WHATSAPP_ALLOWED_USERS: ""
+      TELEGRAM_ALLOWED_USERS: "6786828227"
+      TELEGRAM_HOME_CHANNEL: ""
+      DISCORD_ALLOWED_USERS: ""
+      DISCORD_HOME_CHANNEL: ""
+      SLACK_ALLOWED_USERS: ""
+      SIGNAL_ALLOWED_USERS: ""
+      SIGNAL_GROUP_ALLOWED_USERS: ""
+      # Tell Python to find messaging-platform packages installed by the
+      # install-messaging-deps initContainer below into the PVC. The
+      # upstream image deliberately excludes messaging deps from its
+      # [all] extras group (see hermes-agent pyproject.toml comment dated
+      # 2026-05-12), and the gateway's Telegram adapter import path does
+      # NOT invoke tools/lazy_deps.ensure() -- so without this, Telegram
+      # silently disables with "python-telegram-bot not installed".
+      PYTHONPATH: "/opt/data/python-packages"
+
+    # --- Install messaging platform Python deps into the PVC ---
+    # Idempotent: uv pip install --target is a no-op when packages are
+    # already present at the matching version. Re-runs only when the PVC
+    # is fresh or the spec version below changes.
+    extraInitContainers:
+      - name: install-messaging-deps
+        image: nousresearch/hermes-agent:sha-9ed751b96706ffd343ae26531cd0e2152a1c7036
+        imagePullPolicy: IfNotPresent
+        command: ["/bin/sh", "-ec"]
+        args:
+          - |
+            set -eu
+            TARGET=/opt/data/python-packages
+            mkdir -p "$TARGET"
+            # --target installs into a directory rather than a venv.
+            # --system flag tells uv not to require an active venv.
+            uv pip install --system --target "$TARGET" \
+              "python-telegram-bot[webhooks]==22.6"
+            echo "Installed messaging deps to $TARGET:"
+            ls "$TARGET" | head -20
+        env:
+          - name: HOME
+            value: /opt/data/home
+        volumeMounts:
+          - name: data
+            mountPath: /opt/data
+          - name: tmp
+            mountPath: /tmp
+        securityContext:
+          runAsUser: 10000
+          runAsGroup: 10000
 
     # --- Persistence via Rook-Ceph block storage ---
     persistence:
