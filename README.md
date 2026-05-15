@@ -6,12 +6,14 @@ Infrastructure as Code for my homelab.
 Flux Kustomizations under `clusters/homelab/` decrypt secrets via the
 `sops-age` Secret in the `flux-system` namespace.
 
-### One-time cluster setup
-The private age key is applied out-of-band (never committed):
+### Applying / rotating the age key
+The private age key is applied out-of-band (never committed). The form
+below is idempotent — safe to rerun for initial setup or key rotation:
 
 ```sh
 kubectl -n flux-system create secret generic sops-age \
-  --from-file=age.agekey=$HOME/.config/sops/age/keys.txt
+  --from-file=age.agekey=$HOME/.config/sops/age/keys.txt \
+  --dry-run=client -o yaml | kubectl apply -f -
 ```
 
 ### Encrypting a secret
