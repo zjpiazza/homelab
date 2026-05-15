@@ -9,3 +9,4 @@ resources:
 - rook-ceph-setup-kustomization.yaml
 - rook-ceph-kustomization.yaml
 - hermes-kustomization.yaml
+- cnpg-operator-kustomization.yaml
