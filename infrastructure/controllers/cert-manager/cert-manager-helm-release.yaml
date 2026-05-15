@@ -1,0 +1,50 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: cert-manager
+  namespace: cert-manager
+spec:
+  interval: 15m
+  timeout: 10m
+  targetNamespace: cert-manager
+  chart:
+    spec:
+      chart: cert-manager
+      sourceRef:
+        kind: HelmRepository
+        name: cert-manager
+        namespace: flux-system
+      interval: 1h
+      version: v1.20.2
+  install:
+    crds: CreateReplace
+    remediation:
+      retries: 2
+  upgrade:
+    crds: CreateReplace
+    remediation:
+      retries: 2
+  values:
+    # cert-manager v1.15+ installs its own CRDs when this is true; we use the
+    # chart's CRDs rather than applying them out-of-band so HelmRelease can
+    # manage upgrades cleanly via `crds: CreateReplace` above.
+    crds:
+      enabled: true
+      keep: true
+    # Single replica is sufficient for a 3-node homelab cluster. Each
+    # component (controller, webhook, cainjector) gets its own Deployment.
+    replicaCount: 1
+    webhook:
+      replicaCount: 1
+    cainjector:
+      replicaCount: 1
+    # Disable Prometheus integration until observability stack is installed.
+    prometheus:
+      enabled: false
+    # Conservative resource asks.
+    resources:
+      limits:
+        memory: 256Mi
+      requests:
+        cpu: 50m
+        memory: 64Mi

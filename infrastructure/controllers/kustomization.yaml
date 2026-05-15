@@ -6,3 +6,4 @@ resources:
   - rook-ceph
   - rook-ceph-objectstore
   - cnpg-operator
+  - cert-manager
