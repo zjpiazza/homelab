@@ -1,0 +1,47 @@
+apiVersion: ceph.rook.io/v1
+kind: CephObjectStore
+metadata:
+  name: ceph-objectstore
+  namespace: rook-ceph
+spec:
+  metadataPool:
+    failureDomain: host
+    replicated:
+      size: 3
+      requireSafeReplicaSize: true
+  dataPool:
+    failureDomain: host
+    replicated:
+      size: 3
+      requireSafeReplicaSize: true
+    parameters:
+      compression_mode: none
+  preservePoolsOnDelete: false
+  gateway:
+    port: 80
+    instances: 3
+    priorityClassName: system-cluster-critical
+    placement:
+      podAntiAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                    - rook-ceph-rgw
+            topologyKey: kubernetes.io/hostname
+    resources:
+      requests:
+        cpu: 100m
+        memory: 512Mi
+      limits:
+        memory: 2Gi
+  healthCheck:
+    bucket:
+      disabled: false
+      interval: 60s
+    livenessProbe:
+      disabled: false
+    readinessProbe:
+      disabled: false
