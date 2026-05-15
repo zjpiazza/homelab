@@ -38,10 +38,7 @@ spec:
       limits:
         memory: 2Gi
   healthCheck:
-    bucket:
-      disabled: false
-      interval: 60s
-    livenessProbe:
-      disabled: false
     readinessProbe:
+      disabled: false
+    startupProbe:
       disabled: false
