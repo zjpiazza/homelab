@@ -4,4 +4,5 @@ resources:
   - cilium
   - rook-ceph-setup
   - rook-ceph
+  - rook-ceph-objectstore
   - cnpg-operator
