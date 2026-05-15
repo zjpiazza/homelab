@@ -1,0 +1,41 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: cloudnative-pg
+  namespace: cnpg-system
+spec:
+  interval: 15m
+  timeout: 10m
+  targetNamespace: cnpg-system
+  chart:
+    spec:
+      chart: cloudnative-pg
+      sourceRef:
+        kind: HelmRepository
+        name: cloudnative-pg
+        namespace: flux-system
+      interval: 1h
+      version: 0.28.2
+  install:
+    crds: CreateReplace
+    remediation:
+      retries: 2
+  upgrade:
+    crds: CreateReplace
+    remediation:
+      retries: 2
+  values:
+    # Single operator replica is fine for a 3-node homelab cluster.
+    replicaCount: 1
+    # Operator runs as a Deployment; cluster instances are managed via the
+    # Cluster CRD applied by the separate cnpg-clusters Kustomization.
+    monitoring:
+      podMonitorEnabled: false
+      grafanaDashboard:
+        create: false
+    resources:
+      limits:
+        memory: 256Mi
+      requests:
+        cpu: 100m
+        memory: 128Mi
