@@ -1,0 +1,5 @@
+creation_rules:
+  # Only files named *.sops.yaml are encrypted. Plain manifests stay untouched.
+  - path_regex: \.sops\.yaml$
+    encrypted_regex: ^(data|stringData)$
+    age: age1swfkes9cealehclknyt350m8lj7faw3xwvnx3mllr28xeekq3vyqe8545h
