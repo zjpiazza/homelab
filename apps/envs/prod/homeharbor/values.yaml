@@ -1,17 +1,17 @@
 image:
   api:
     repository: ghcr.io/zjpiazza/homeharbor/api
-    tag: main
+    tag: latest
   worker:
     repository: ghcr.io/zjpiazza/homeharbor/worker
-    tag: main
+    tag: latest
 
 domain: homeharbor.cloud
 apiHost: api.homeharbor.cloud
 
 cloudflare:
-  accountId: ""
-  email: ""
+  accountId: "5cb5a4fcfcdb8d4f4e01283f2c3eedbc"
+  email: "zjpiazza@gmail.com"
 
 database:
   size: 5Gi
