@@ -2,9 +2,11 @@ image:
   api:
     repository: ghcr.io/zjpiazza/homeharbor/api
     tag: latest
+    pullPolicy: Always
   worker:
     repository: ghcr.io/zjpiazza/homeharbor/worker
     tag: latest
+    pullPolicy: Always
 
 domain: homeharbor.cloud
 apiHost: api.homeharbor.cloud
