@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: inngest
+  namespace: inngest
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8288
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app: inngest

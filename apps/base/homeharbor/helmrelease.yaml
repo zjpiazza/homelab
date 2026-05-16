@@ -1,0 +1,17 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: homeharbor
+  namespace: homeharbor
+spec:
+  interval: 5m
+  chartRef:
+    kind: OCIRepository
+    name: homeharbor
+  valuesFrom:
+    - kind: ConfigMap
+      name: homeharbor-values
+      valuesKey: values.yaml
+    - kind: Secret
+      name: homeharbor-values-secrets
+      valuesKey: values.yaml

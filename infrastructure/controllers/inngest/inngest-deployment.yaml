@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: inngest
+  namespace: inngest
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: inngest
+  template:
+    metadata:
+      labels:
+        app: inngest
+    spec:
+      containers:
+        - name: inngest
+          image: inngest/inngest:v1.19.4
+          args:
+            - "start"
+            - "--no-discovery"
+            - "-u"
+            - "$(POSTGRES_URI)"
+          ports:
+            - name: http
+              containerPort: 8288
+              protocol: TCP
+          env:
+            - name: INNGEST_EVENT_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: inngest
+                  key: INNGEST_EVENT_KEY
+            - name: INNGEST_SIGNING_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: inngest
+                  key: INNGEST_SIGNING_KEY
+            - name: POSTGRES_URI
+              valueFrom:
+                secretKeyRef:
+                  name: inngest-pg-app
+                  key: uri
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"

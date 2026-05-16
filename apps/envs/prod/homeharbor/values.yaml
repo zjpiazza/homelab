@@ -1,0 +1,21 @@
+image:
+  api:
+    repository: ghcr.io/zjpiazza/homeharbor/api
+    tag: main
+  worker:
+    repository: ghcr.io/zjpiazza/homeharbor/worker
+    tag: main
+
+domain: homeharbor.cloud
+apiHost: api.homeharbor.cloud
+
+cloudflare:
+  accountId: ""
+  email: ""
+
+database:
+  size: 5Gi
+  instances: 1
+
+storage:
+  bucketName: homeharbor-storage

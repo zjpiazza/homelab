@@ -1,0 +1,7 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - namespace.yaml
+  - permit-pdp-secret.sops.yaml
+  - permit-pdp-deployment.yaml
+  - permit-pdp-service.yaml

@@ -1,0 +1,10 @@
+apiVersion: source.toolkit.fluxcd.io/v1beta2
+kind: OCIRepository
+metadata:
+  name: homeharbor
+  namespace: homeharbor
+spec:
+  interval: 5m
+  url: oci://ghcr.io/zjpiazza/charts/homeharbor
+  ref:
+    semver: "*"

@@ -1,7 +1,4 @@
 creation_rules:
-  # Files whose name ends in `.sops.yaml` with at least one preceding
-  # character (e.g. cloudflared.sops.yaml) are encrypted. The leading
-  # `.+` excludes the bare `.sops.yaml` config file at the repo root.
   - path_regex: .+\.sops\.yaml$
     encrypted_regex: ^(data|stringData)$
-    age: age1swfkes9cealehclknyt350m8lj7faw3xwvnx3mllr28xeekq3vyqe8545h
+    age: age105q796d973wvg0p3t4m0yfdqwzpztvvhj6v9gyllfywd3cdcvd5q9vwu2n

@@ -1,0 +1,18 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: inngest-pg
+  namespace: inngest
+spec:
+  instances: 1
+  storage:
+    size: 5Gi
+    storageClass: ceph-block
+  bootstrap:
+    initdb:
+      database: inngest
+      owner: inngest
+  postgresql:
+    parameters:
+      max_connections: "100"
+      shared_buffers: "128MB"

@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: permit-pdp
+  namespace: permit-pdp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: permit-pdp
+  template:
+    metadata:
+      labels:
+        app: permit-pdp
+    spec:
+      containers:
+        - name: pdp
+          image: permitio/pdp:latest
+          ports:
+            - name: http
+              containerPort: 7000
+              protocol: TCP
+          env:
+            - name: PDP_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: permit-pdp
+                  key: PERMIT_API_KEY
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
