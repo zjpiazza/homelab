@@ -6,7 +6,7 @@ metadata:
 spec:
   interval: 10m0s
   dependsOn:
-    - name: flux-system
+    - name: infrastructure
   path: ./infrastructure/controllers/permit-pdp
   prune: true
   sourceRef:
@@ -16,4 +16,3 @@ spec:
     provider: sops
     secretRef:
       name: sops-age
-      namespace: flux-system

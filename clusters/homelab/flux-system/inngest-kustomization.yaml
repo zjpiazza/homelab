@@ -6,8 +6,7 @@ metadata:
 spec:
   interval: 10m0s
   dependsOn:
-    - name: flux-system
-    - name: rook-ceph
+    - name: infrastructure
   path: ./infrastructure/controllers/inngest
   prune: true
   sourceRef:
@@ -17,4 +16,3 @@ spec:
     provider: sops
     secretRef:
       name: sops-age
-      namespace: flux-system
