@@ -7,3 +7,4 @@ resources:
   - rook-ceph-objectstore
   - cnpg-operator
   - cert-manager
+  - cloudflare-operator
