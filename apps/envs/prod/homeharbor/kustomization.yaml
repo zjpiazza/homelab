@@ -4,6 +4,7 @@ namespace: homeharbor
 resources:
   - ../../../base/homeharbor
   - values-secrets.sops.yaml
+  - cloudflare-secrets.sops.yaml
 generatorOptions:
   disableNameSuffixHash: true
 configMapGenerator:
