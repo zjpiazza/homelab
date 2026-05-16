@@ -1,0 +1,16 @@
+# cloudflare-operator
+#
+# Upstream: https://github.com/adyanth/cloudflare-operator
+# Install method: remote Kustomize base at the operator's `config/default` overlay,
+# pinned to v0.13.1. The base creates the `cloudflare-operator-system` namespace
+# (via config/manager/manager.yaml rewritten by the default overlay's namespace
+# field), the controller Deployment, RBAC, the validating webhook + its
+# cert-manager Certificate, the CRDs, and the metrics service. We additionally
+# manage:
+#   - cloudflare-secrets Secret (this Kustomization, via SOPS)
+#   - Tunnel / ClusterTunnel / TunnelBinding CRs (per-app, in apps/)
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - https://github.com/adyanth/cloudflare-operator.git/config/default?ref=v0.13.1
+  - cloudflare-secrets.sops.yaml
