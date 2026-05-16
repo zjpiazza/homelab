@@ -3,9 +3,6 @@ kind: Kustomization
 resources:
 - gotk-components.yaml
 - gotk-sync.yaml
-- cilium-helm-repository.yaml
-- cilium-helm-release.yaml
-- cilium-rbac.yaml
 - rook-ceph-setup-kustomization.yaml
 - rook-ceph-kustomization.yaml
 - hermes-kustomization.yaml
