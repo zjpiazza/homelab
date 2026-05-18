@@ -1,0 +1,124 @@
+# AFFiNE server.
+#
+# Mirrors the upstream docker-compose `affine` service:
+#   https://docs.affine.pro/self-host-affine/references/docker-compose-yml
+#
+# DATABASE_URL is sourced from the CNPG-managed `affine-pg-app` secret (the
+# "app" secret CNPG generates for the bootstrap.initdb.owner role); REDIS host
+# points at the in-namespace StatefulSet. AFFINE_INDEXER_ENABLED is false to
+# match the upstream compose default — flip to true and add an indexer
+# deployment per the Indexer admin guide if/when you want full-text search.
+#
+# A single replica is intentional: AFFiNE stores yjs collaboration state in
+# Redis/Postgres, but its sync layer assumes one server process at a time for
+# the self-hosted topology. Use `Recreate` for the same reason — rolling
+# updates would briefly run two servers.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: affine
+  namespace: affine
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: affine
+  template:
+    metadata:
+      labels:
+        app: affine
+    spec:
+      # Re-run migrations on every pod start. Idempotent per AFFiNE upstream
+      # (compose uses `service_completed_successfully`); cheap and ensures
+      # schema is current after image bumps.
+      initContainers:
+        - name: migrate
+          image: ghcr.io/toeverything/affine:stable
+          command: ["sh", "-c", "node ./scripts/self-host-predeploy.js"]
+          env:
+            - name: REDIS_SERVER_HOST
+              value: affine-redis
+            - name: AFFINE_INDEXER_ENABLED
+              value: "false"
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: affine-pg-app
+                  key: uri
+          volumeMounts:
+            - name: config
+              mountPath: /root/.affine/config
+            - name: storage
+              mountPath: /root/.affine/storage
+      containers:
+        - name: affine
+          image: ghcr.io/toeverything/affine:stable
+          ports:
+            - name: http
+              containerPort: 3010
+          env:
+            - name: REDIS_SERVER_HOST
+              value: affine-redis
+            - name: AFFINE_INDEXER_ENABLED
+              value: "false"
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: affine-pg-app
+                  key: uri
+            # Server external URL is wired in the env overlay because it's
+            # environment-specific (domain + scheme). See
+            # apps/envs/prod/affine/server-env.yaml.
+          envFrom:
+            - configMapRef:
+                name: affine-server-env
+                optional: true
+          readinessProbe:
+            httpGet:
+              path: /info
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            failureThreshold: 6
+          livenessProbe:
+            httpGet:
+              path: /info
+              port: http
+            initialDelaySeconds: 60
+            periodSeconds: 20
+            failureThreshold: 5
+          volumeMounts:
+            - name: config
+              mountPath: /root/.affine/config
+            - name: storage
+              mountPath: /root/.affine/storage
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "1Gi"
+            limits:
+              cpu: "2"
+              memory: "4Gi"
+      volumes:
+        - name: config
+          persistentVolumeClaim:
+            claimName: affine-config
+        - name: storage
+          persistentVolumeClaim:
+            claimName: affine-storage
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: affine
+  namespace: affine
+spec:
+  type: ClusterIP
+  selector:
+    app: affine
+  ports:
+    - name: http
+      port: 3010
+      targetPort: http

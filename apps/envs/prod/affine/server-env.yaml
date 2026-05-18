@@ -1,0 +1,15 @@
+# Server-side env wired to the prod domain. The base Deployment loads this
+# ConfigMap via envFrom (optional), so changes here trigger a rolling restart
+# on next reconcile if the values change.
+#
+# AFFINE_SERVER_EXTERNAL_URL is what AFFiNE uses to build invite links,
+# public doc links, and OAuth callbacks — must match the public URL.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: affine-server-env
+  namespace: affine
+data:
+  AFFINE_SERVER_HTTPS: "true"
+  AFFINE_SERVER_HOST: "affine.wastelandsystems.io"
+  AFFINE_SERVER_EXTERNAL_URL: "https://affine.wastelandsystems.io"

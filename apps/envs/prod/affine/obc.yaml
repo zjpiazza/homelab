@@ -1,0 +1,19 @@
+# Rook-Ceph S3 bucket for AFFiNE blob storage.
+#
+# When the Rook OBB provisioner creates this bucket, it also produces a
+# matching ConfigMap and Secret of the same name in this namespace:
+#
+#   ConfigMap/affine-blobs : BUCKET_HOST, BUCKET_PORT, BUCKET_NAME, BUCKET_REGION
+#   Secret/affine-blobs    : AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY
+#
+# The AFFiNE server doesn't read these directly — the operator switches storage
+# to "aws-s3" via the Admin Panel (Settings -> Storage) after first login and
+# pastes the JSON config that references these values. See README.md.
+apiVersion: objectbucket.io/v1alpha1
+kind: ObjectBucketClaim
+metadata:
+  name: affine-blobs
+  namespace: affine
+spec:
+  generateBucketName: affine-blobs-
+  storageClassName: ceph-bucket

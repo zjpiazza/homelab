@@ -1,0 +1,31 @@
+# Persistent volumes for the AFFiNE server.
+#
+# `storage` corresponds to UPLOAD_LOCATION (uploaded blobs) and `config` to
+# CONFIG_LOCATION in upstream docker-compose. We keep `storage` as a PVC for
+# bootstrap — once an admin signs in and switches the Storage provider to
+# `aws-s3` pointing at the Rook CephObjectStore (see ../../envs/prod/affine/
+# obc.yaml + README), new blobs go to S3 and this PVC only retains anything
+# uploaded before the switch.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: affine-storage
+  namespace: affine
+spec:
+  accessModes: ["ReadWriteOnce"]
+  storageClassName: rook-ceph-block
+  resources:
+    requests:
+      storage: 20Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: affine-config
+  namespace: affine
+spec:
+  accessModes: ["ReadWriteOnce"]
+  storageClassName: rook-ceph-block
+  resources:
+    requests:
+      storage: 1Gi

@@ -7,3 +7,4 @@ resources:
 - permit-pdp-kustomization.yaml
 - inngest-kustomization.yaml
 - homeharbor-kustomization.yaml
+- affine-kustomization.yaml

@@ -1,0 +1,38 @@
+# AFFiNE Postgres backend.
+#
+# AFFiNE requires the pgvector extension when AI doc embedding is enabled, and
+# the upstream docker-compose pins pgvector/pgvector:pg16 even for non-AI use
+# (it's a small superset of stock postgres:16). CNPG's "standard" image tags
+# bundle pgvector, so we use those here to stay close to the upstream contract
+# without forking an image.
+#
+# Refs:
+#   https://docs.affine.pro/self-host-affine/administer/ai (pgvector required)
+#   https://github.com/cloudnative-pg/postgres-containers (standard images
+#   ship pgvector, PGAudit, failover-slots, LLVM JIT)
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: affine-pg
+  namespace: affine
+spec:
+  instances: 1
+  imageName: ghcr.io/cloudnative-pg/postgresql:16-standard-bookworm
+  storage:
+    size: 10Gi
+    storageClass: rook-ceph-block
+  bootstrap:
+    initdb:
+      database: affine
+      owner: affine
+      dataChecksums: true
+      # AFFiNE's self-host-predeploy.js creates its own schema; we only need
+      # the pgvector extension available on first boot.
+      postInitTemplateSQL:
+        - CREATE EXTENSION IF NOT EXISTS vector;
+      postInitApplicationSQL:
+        - CREATE EXTENSION IF NOT EXISTS vector;
+  postgresql:
+    parameters:
+      max_connections: "200"
+      shared_buffers: "256MB"

@@ -1,0 +1,60 @@
+# Minimal single-node Redis for AFFiNE's sync/cache/background queues.
+# AFFiNE uses up to 5 Redis databases starting from REDIS_SERVER_DATABASE
+# (default 0). Persistence is intentionally disabled: state in Redis is
+# treated as cache/coordination, durable state lives in Postgres + blob
+# storage.
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: affine-redis
+  namespace: affine
+spec:
+  serviceName: affine-redis
+  replicas: 1
+  selector:
+    matchLabels:
+      app: affine-redis
+  template:
+    metadata:
+      labels:
+        app: affine-redis
+    spec:
+      containers:
+        - name: redis
+          image: redis:7-alpine
+          args: ["--save", "", "--appendonly", "no"]
+          ports:
+            - name: redis
+              containerPort: 6379
+          readinessProbe:
+            exec:
+              command: ["redis-cli", "ping"]
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          livenessProbe:
+            exec:
+              command: ["redis-cli", "ping"]
+            initialDelaySeconds: 15
+            periodSeconds: 10
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "64Mi"
+            limits:
+              cpu: "500m"
+              memory: "256Mi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: affine-redis
+  namespace: affine
+spec:
+  type: ClusterIP
+  clusterIP: None
+  selector:
+    app: affine-redis
+  ports:
+    - name: redis
+      port: 6379
+      targetPort: redis

@@ -1,0 +1,25 @@
+# Routes affine.wastelandsystems.io through the cluster-wide
+# `wastelandsystems` ClusterTunnel (see
+# infrastructure/controllers/cloudflare-operator/clustertunnel-wastelandsystems.yaml)
+# to the in-namespace `affine` Service on port 3010.
+#
+# The cloudflare-operator adds a proxied CNAME
+# affine.wastelandsystems.io → <tunnel-uuid>.cfargotunnel.com automatically
+# and reverses it when this TunnelBinding is deleted.
+#
+# TunnelBinding is namespaced; tunnelRef.kind=ClusterTunnel lets it bind to
+# a cluster-scoped tunnel without needing a Tunnel CR (or its secret) in
+# this namespace.
+apiVersion: networking.cfargotunnel.com/v1alpha1
+kind: TunnelBinding
+metadata:
+  name: affine
+  namespace: affine
+subjects:
+  - name: affine
+    spec:
+      fqdn: affine.wastelandsystems.io
+      target: http://affine.affine.svc.cluster.local:3010
+tunnelRef:
+  kind: ClusterTunnel
+  name: wastelandsystems
