@@ -28,7 +28,7 @@ is switched to the Rook-Ceph S3 bucket provisioned by `obc.yaml` (see
 ## Repo layout
 
 - `apps/base/affine/` – environment-agnostic manifests (namespace, CNPG,
-  Redis, Deployment, migration Job, Services, PVCs).
+  Redis, Deployment with migration initContainer, Services, PVCs).
 - `apps/envs/prod/affine/` – prod overlay: ObjectBucketClaim, server URL
   ConfigMap, TunnelBinding for `affine.wastelandsystems.io`.
 - `clusters/homelab/flux-system/affine-kustomization.yaml` – Flux entrypoint.
@@ -107,20 +107,17 @@ Once AFFiNE is up and you've signed in as admin:
 
 ## Operations
 
-**Re-run database migrations** (e.g. after image upgrade):
+**Re-run database migrations** (e.g. after image upgrade): restart the
+Deployment — the migration is run in an initContainer on every pod start
+and is idempotent.
 
 ```sh
-kubectl -n affine delete job affine-migration --ignore-not-found
-kubectl -n affine apply -k apps/envs/prod/affine
-# or bump apps/base/affine/migration-job.yaml's migration-revision annotation
+kubectl -n affine rollout restart deploy/affine
 ```
 
-The pod Deployment also re-runs the migration as an initContainer on every
-pod start, so the standalone Job is mainly useful for one-off CLI invocation.
-
 **Bump AFFiNE version**: edit the `ghcr.io/toeverything/affine:stable` tag in
-both `apps/base/affine/deployment.yaml` and
-`apps/base/affine/migration-job.yaml`.
+`apps/base/affine/deployment.yaml` (used by both the migration initContainer
+and the server container).
 
 ## Why these choices
 
