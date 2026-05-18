@@ -1,0 +1,30 @@
+# Cluster-wide Cloudflare Tunnel for wastelandsystems.io.
+#
+# This is shared platform infrastructure: any app in any namespace can route
+# itself through this tunnel by creating a TunnelBinding with
+# `tunnelRef.kind: ClusterTunnel` and `tunnelRef.name: wastelandsystems`.
+#
+# The cloudflared Deployment that backs this tunnel runs in
+# `cloudflare-operator-system` (the operator's install namespace), where the
+# Secret named below also lives — so no per-app duplication of the API
+# token is needed.
+#
+# !! IMPORTANT: The token currently in
+#    infrastructure/controllers/cloudflare-operator/cloudflare-secrets.sops.yaml
+#    must include Zone:DNS:Edit permission on the `wastelandsystems.io` zone.
+#    If it was originally scoped only to homeharbor.cloud, re-issue or
+#    re-scope it (Cloudflare dashboard ▸ My Profile ▸ API Tokens) before this
+#    ClusterTunnel will reconcile successfully.
+apiVersion: networking.cfargotunnel.com/v1alpha2
+kind: ClusterTunnel
+metadata:
+  name: wastelandsystems
+spec:
+  newTunnel:
+    name: wastelandsystems
+  cloudflare:
+    domain: wastelandsystems.io
+    secret: cloudflare-secrets
+    accountId: "5cb5a4fcfcdb8d4f4e01283f2c3eedbc"
+    email: "zjpiazza@gmail.com"
+  size: 1

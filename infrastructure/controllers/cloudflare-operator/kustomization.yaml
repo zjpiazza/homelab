@@ -14,3 +14,4 @@ kind: Kustomization
 resources:
   - https://github.com/adyanth/cloudflare-operator.git/config/default?ref=v0.13.1
   - cloudflare-secrets.sops.yaml
+  - clustertunnel-wastelandsystems.yaml
