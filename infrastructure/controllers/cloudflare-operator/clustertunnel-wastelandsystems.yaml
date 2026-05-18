@@ -27,4 +27,3 @@ spec:
     secret: cloudflare-secrets
     accountId: "5cb5a4fcfcdb8d4f4e01283f2c3eedbc"
     email: "zjpiazza@gmail.com"
-  size: 1
