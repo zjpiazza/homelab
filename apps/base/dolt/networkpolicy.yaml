@@ -1,0 +1,22 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: dolt-ingress
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: dolt
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: tailscale
+          podSelector:
+            matchLabels:
+              tailscale.com/parent-resource: dolt-tailnet
+              tailscale.com/parent-resource-ns: dolt
+      ports:
+        - protocol: TCP
+          port: 3306

@@ -1,0 +1,24 @@
+apiVersion: v1
+kind: Secret
+metadata:
+    name: dolt-auth
+    namespace: dolt
+type: Opaque
+stringData:
+    root-password: ENC[AES256_GCM,data:CfGVFjag0kmIUbk7wsZEYiz+811ZnbkJJAJodW4tHYQvRc24my6IiH2gOXgqi2E7dUGgKRTPxWy15frSeysQsA==,iv:vhgn5ycjqBAfcIh4Qt/LU3KHcfpwQMBXf24dufrxdvw=,tag:9RXigj55SXpdeufrcGPlYQ==,type:str]
+    admin-password: ENC[AES256_GCM,data:J3LI6tpoyRLQ0ToaflLXLxL0tuMnh8sHHElA1/WjLipif6QuRB5Rt0Zi0ZVHQGruFP09YOXchi2y83zdEaCadQ==,iv:X1E/InuvafZTnQkTr5eGQsIJTm+YjkHOyYgsLQA2Fzk=,tag:tR1rKbB3dHydH3XzqZ3grA==,type:str]
+sops:
+    age:
+        - enc: |
+            -----BEGIN AGE ENCRYPTED FILE-----
+            YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSA5eWw3d0tWU3hXTytxR2JL
+            dGpSYjgwSE0zZWdYWWtNOUFJNytmUE1rUFQwCjk4UmpsVmRCN1k3cGU5RTk2MGdG
+            dEtMUWhyclRZZTFySU45WWdKVDRzLzQKLS0tIGRaYnBidWNTYjVDa3ZMazQwRTVI
+            VDg0akJ3SWphMmFmL01iR2hPR1gzTnMKYjt/GO2J4ChDtdU6tuA6ftcknxQXt1Ck
+            Z+uJiBxdk20oUZi4HqxGq46ikIGPz22T/Ibf26LWeaaTbFFpXcTm7Q==
+            -----END AGE ENCRYPTED FILE-----
+          recipient: age105q796d973wvg0p3t4m0yfdqwzpztvvhj6v9gyllfywd3cdcvd5q9vwu2n
+    encrypted_regex: ^(data|stringData)$
+    lastmodified: "2026-09-15T13:51:48Z"
+    mac: ENC[AES256_GCM,data:kMr3VJyyG6fCzxynjKS8eYUAlNzmO6qZjtCeoc2GvEGY1qt7NXcHDGEnTYENSQ/cVoQNHhDLRKlxsOOToTQUT/XmPwejgV/axV/uxlJl6lYHxU8DTBX1mWCQ+lX4pK3KxDk9cvCgqT7fzS/4Yuv0vlo08brF9e0gQdHA3w8qryg=,iv:Xfb6r2DKslrOGJnxKcpmN8+/YtSC4xumoeLi7OWehLE=,tag:OT69s7J8SUtFHS3r3TKJOQ==,type:str]
+    version: 3.13.3

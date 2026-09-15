@@ -1,0 +1,93 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: dolt
+spec:
+  serviceName: dolt-headless
+  # One writer process owns these database files. Do not scale this StatefulSet.
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: dolt
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: dolt
+    spec:
+      automountServiceAccountToken: false
+      terminationGracePeriodSeconds: 120
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: dolt
+          # This is the standalone Dolt version currently pinned by Beads.
+          image: dolthub/dolt-sql-server:2.2.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: mysql
+              containerPort: 3306
+          env:
+            - name: DOLT_ROOT_HOST
+              value: localhost
+            - name: DOLT_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: dolt-auth
+                  key: root-password
+            - name: DOLT_USER
+              value: dolt-admin
+            - name: DOLT_USER_HOST
+              value: "%"
+            - name: DOLT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: dolt-auth
+                  key: admin-password
+          resources:
+            requests:
+              cpu: 250m
+              memory: 512Mi
+            limits:
+              cpu: "2"
+              memory: 4Gi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: [ALL]
+          startupProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -ec
+                - 'test -f /var/lib/dolt/.init_completed && DOLT_CLI_PASSWORD="$DOLT_ROOT_PASSWORD" dolt --host 127.0.0.1 --port 3306 --user root --no-tls sql -q "SELECT 1"'
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 60
+          readinessProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -ec
+                - 'DOLT_CLI_PASSWORD="$DOLT_ROOT_PASSWORD" dolt --host 127.0.0.1 --port 3306 --user root --no-tls sql -q "SELECT 1"'
+            periodSeconds: 10
+            timeoutSeconds: 5
+          livenessProbe:
+            tcpSocket:
+              port: mysql
+            periodSeconds: 20
+            timeoutSeconds: 5
+            failureThreshold: 6
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/dolt
+            - name: init
+              mountPath: /docker-entrypoint-initdb.d
+              readOnly: true
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: dolt-data
+        - name: init
+          configMap:
+            name: dolt-init
