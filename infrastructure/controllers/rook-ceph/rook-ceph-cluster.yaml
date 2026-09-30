@@ -26,7 +26,9 @@ spec:
     maxLogSize: 500M
   storage:
     useAllNodes: true
-    useAllDevices: true
+    useAllDevices: false
+    devices:
+      - name: nvme0n1
     config:
       osdsPerDevice: "1"
       storeType: bluestore
@@ -41,4 +43,3 @@ spec:
     daemonHealth:
       mon:
         interval: 45s
-
