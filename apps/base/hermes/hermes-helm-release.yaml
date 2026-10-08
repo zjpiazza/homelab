@@ -74,19 +74,19 @@ spec:
       WHATSAPP_ALLOWED_USERS: ""
       TELEGRAM_ALLOWED_USERS: "6786828227"
       TELEGRAM_HOME_CHANNEL: ""
-      DISCORD_ALLOWED_USERS: ""
+      DISCORD_ALLOWED_USERS: "151864862186799104"
       DISCORD_HOME_CHANNEL: ""
       SLACK_ALLOWED_USERS: ""
       SIGNAL_ALLOWED_USERS: ""
       SIGNAL_GROUP_ALLOWED_USERS: ""
-      # Load Telegram dependencies from the PVC. The image's [all] extra
+      # Load Telegram and Discord dependencies from the PVC. The image's [all] extra
       # excludes messaging packages, and runtime lazy installation cannot
       # write into /opt/hermes/.venv with the chart's read-only root filesystem.
       PYTHONPATH: "/opt/data/python-packages"
 
     # --- Install messaging platform Python deps into the PVC ---
     # Keep this image aligned with image.tag above. The selected release
-    # includes uv and requires python-telegram-bot[webhooks]==22.6.
+    # includes uv; match the Telegram and Discord pins in its messaging extra.
     extraInitContainers:
       - name: install-messaging-deps
         image: nousresearch/hermes-agent:v2026.5.16@sha256:b6e41c155d6bfce5ad83c5d0fec670086db8a43250e4511c9474134be5482d33
@@ -100,7 +100,10 @@ spec:
             # --target installs into a directory rather than a venv.
             # --system flag tells uv not to require an active venv.
             uv pip install --system --target "$TARGET" \
-              "python-telegram-bot[webhooks]==22.6"
+              "python-telegram-bot[webhooks]==22.6" \
+              "discord.py[voice]==2.7.1" \
+              "aiohttp==3.13.3" \
+              "brotlicffi==1.2.0.1"
             echo "Installed messaging deps to $TARGET:"
             ls "$TARGET" | head -20
         env:

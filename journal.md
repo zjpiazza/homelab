@@ -357,3 +357,47 @@ Authorize the intended platform ChatGPT account, then verify the coordinator's
 rollout and `codex-auth status`. Do not copy workstation credentials, expose
 tokens, or share refresh authority with another client. The owning project's
 `docs/codex.md` documents the lifecycle and authentication requirements.
+
+## Hermes Discord integration (October 8, 2026)
+
+The existing `hermes` release uses `ultraworkers/hermes-agent-helm-chart`.
+Discord was added to this release, preserving Telegram, OpenRouter, and the
+existing single-writer PVC.
+
+The pinned runtime's messaging extra requires `discord.py[voice]==2.7.1`,
+`aiohttp==3.13.3`, and `brotlicffi==1.2.0.1`. These are installed alongside
+Telegram in the existing PVC-backed dependency init container; runtime lazy
+installation cannot write to the read-only image. Installation and adapter
+imports passed a temporary-directory smoke check before deployment.
+
+Activation requires a Discord bot token in the out-of-band `hermes-secrets`
+Secret. Merge only `DISCORD_BOT_TOKEN`; do not replace the Telegram/OpenRouter
+keys or commit plaintext credentials. Before restarting the gateway, verify
+the token against Discord's application API and set `DISCORD_ALLOWED_USERS` to
+the application's owner's numeric ID (team owner ID for a team-owned app).
+Never enable the adapter with an empty allowlist: some adapter interaction
+paths treat an empty list as allowing everyone.
+
+`DISCORD_ALLOWED_USERS` is restricted to `151864862186799104`, verified as
+the owner of application `1439833258404741292` (bot `d3adb0y`). The default
+server-channel mention requirement remains enabled.
+Enable Message Content Intent in the Discord Developer Portal. The pinned
+adapter requests Server Members Intent only for username or role allowlists,
+not numeric user IDs. Invite with `bot` and `applications.commands` scopes;
+grant channel messaging, attachments, embeds, history, reactions, and public
+thread permissions as needed, not Administrator.
+
+Live verification: Helm upgrade succeeded; gateway runtime status reported
+both Discord and Telegram connected without errors. The deployed environment
+contains the intended allowlist, and an adapter authorization smoke check
+accepted the owner and rejected an unrelated user. The bot token remains
+out-of-band in Kubernetes, never in Git.
+
+At credential verification the bot had no guild memberships. The operator must
+authorize its server invitation before server-channel use:
+
+https://discord.com/oauth2/authorize?client_id=1439833258404741292&scope=bot+applications.commands&permissions=309237763136
+
+After inviting, send `@d3adb0y ping` from the allowed account to verify a real
+Discord-to-model-to-Discord exchange; gateway connectivity alone does not
+prove that message round trip.
