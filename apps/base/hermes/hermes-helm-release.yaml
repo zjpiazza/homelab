@@ -79,14 +79,14 @@ spec:
       SLACK_ALLOWED_USERS: ""
       SIGNAL_ALLOWED_USERS: ""
       SIGNAL_GROUP_ALLOWED_USERS: ""
-      # Load Telegram and Discord dependencies from the PVC. The image's [all] extra
-      # excludes messaging packages, and runtime lazy installation cannot
-      # write into /opt/hermes/.venv with the chart's read-only root filesystem.
+      # Load messaging and speech dependencies from the PVC; the image's root
+      # filesystem is read-only, so runtime lazy installation cannot modify it.
       PYTHONPATH: "/opt/data/python-packages"
+      # Keep the local Whisper model cache across pod replacements.
+      HF_HOME: "/opt/data/cache/huggingface"
 
-    # --- Install messaging platform Python deps into the PVC ---
-    # Keep this image aligned with image.tag above. The selected release
-    # includes uv; match the Telegram and Discord pins in its messaging extra.
+    # --- Install messaging and speech Python deps into the PVC ---
+    # Keep this image aligned with image.tag above and match its dependency pins.
     extraInitContainers:
       - name: install-messaging-deps
         image: nousresearch/hermes-agent:v2026.5.16@sha256:b6e41c155d6bfce5ad83c5d0fec670086db8a43250e4511c9474134be5482d33
@@ -99,11 +99,17 @@ spec:
             mkdir -p "$TARGET"
             # --target installs into a directory rather than a venv.
             # --system flag tells uv not to require an active venv.
+            # Match the runtime's uv.lock: PyAV 19 removed metadata_errors,
+            # which faster-whisper 1.2.1 still passes when decoding audio.
             uv pip install --system --target "$TARGET" \
               "python-telegram-bot[webhooks]==22.6" \
               "discord.py[voice]==2.7.1" \
               "aiohttp==3.13.3" \
-              "brotlicffi==1.2.0.1"
+              "brotlicffi==1.2.0.1" \
+              "faster-whisper==1.2.1" \
+              "av==17.0.0" \
+              "numpy==2.4.3" \
+              "edge-tts==7.2.7"
             echo "Installed messaging deps to $TARGET:"
             ls "$TARGET" | head -20
         env:
@@ -137,6 +143,14 @@ spec:
           default: anthropic/claude-opus-4.6
           provider: auto
           base_url: https://openrouter.ai/api/v1
+        stt:
+          provider: local
+          local:
+            model: base
+        tts:
+          provider: edge
+          edge:
+            voice: en-US-AriaNeural
         agent:
           max_turns: 90
           gateway_timeout: 1800

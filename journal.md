@@ -401,3 +401,48 @@ https://discord.com/oauth2/authorize?client_id=1439833258404741292&scope=bot+app
 After inviting, send `@hermes_homelab ping` from the allowed account to verify a real
 Discord-to-model-to-Discord exchange; gateway connectivity alone does not
 prove that message round trip.
+
+### Discord voice channels
+
+The bot has joined `zjpiazza.dev` (`1557785189055336508`). Its `General` voice
+channel is `1557785191437828109`; effective permissions include View Channel,
+Connect, and Speak without Administrator.
+
+Speech configuration is managed in the Hermes HelmRelease:
+
+- `stt.provider: local`, Whisper model `base`; `faster-whisper==1.2.1`.
+- `tts.provider: edge`, voice `en-US-AriaNeural`; `edge-tts==7.2.7`.
+- `numpy==2.4.3` matches the runtime's voice extra. Pin `av==17.0.0` from the
+  runtime's `uv.lock`: unconstrained installation selected PyAV 19.0.1, whose
+  removed `metadata_errors` argument breaks Faster-Whisper audio decoding.
+- `HF_HOME=/opt/data/cache/huggingface` keeps the downloaded Whisper model on
+  the existing PVC. The initial model download completed during verification.
+- No additional speech API key is required. Audio transcription runs locally;
+  reply text is sent to Microsoft's Edge TTS service for speech synthesis.
+  The existing LLM still uses OpenRouter.
+
+Verified in the deployed pod: Edge synthesized a test sentence, FFmpeg decoded
+it, Discord's Opus encoder/decoder completed a frame round trip, and local
+Whisper transcribed "The HomeLab Voice System is ready for a conversation."
+Both Telegram and Discord remained connected. Temporary smoke audio was
+removed. A live user microphone/Discord voice-channel round trip still requires
+the user to join and speak.
+
+To start:
+
+1. Join **General** in Discord using the allowed account.
+2. In a server text channel where the bot is present, use `/voice` with
+   `mode: join` (documented as `/voice join`). Do not issue it from a DM.
+3. Speak; that text channel receives transcripts and responses, while spoken
+   replies play in the voice channel.
+4. Use `/voice status` to inspect the session or `/voice leave` to disconnect.
+
+`/voice tts` enables spoken attachments for text messages; it is not the
+voice-channel join command. `/sethome` is optional and only chooses a target
+for scheduled/cross-platform deliveries; no home channel is needed for voice.
+Sending the bot an invite link as a normal chat message does not invoke a
+Discord join command.
+
+For future installations needing explicit voice permissions, authorize:
+
+https://discord.com/oauth2/authorize?client_id=1439833258404741292&scope=bot+applications.commands&permissions=309240908864
