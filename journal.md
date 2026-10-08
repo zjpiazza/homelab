@@ -379,7 +379,7 @@ Never enable the adapter with an empty allowlist: some adapter interaction
 paths treat an empty list as allowing everyone.
 
 `DISCORD_ALLOWED_USERS` is restricted to `151864862186799104`, verified as
-the owner of application `1439833258404741292` (bot `d3adb0y`). The default
+the owner of application `1439833258404741292` (bot `hermes_homelab`). The default
 server-channel mention requirement remains enabled.
 Enable Message Content Intent in the Discord Developer Portal. The pinned
 adapter requests Server Members Intent only for username or role allowlists,
@@ -398,6 +398,6 @@ authorize its server invitation before server-channel use:
 
 https://discord.com/oauth2/authorize?client_id=1439833258404741292&scope=bot+applications.commands&permissions=309237763136
 
-After inviting, send `@d3adb0y ping` from the allowed account to verify a real
+After inviting, send `@hermes_homelab ping` from the allowed account to verify a real
 Discord-to-model-to-Discord exchange; gateway connectivity alone does not
 prove that message round trip.
