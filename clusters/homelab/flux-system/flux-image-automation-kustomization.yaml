@@ -9,6 +9,7 @@ spec:
     - name: flux-system
   path: ./infrastructure/controllers/flux-image-automation
   prune: true
+  wait: true
   sourceRef:
     kind: GitRepository
     name: flux-system

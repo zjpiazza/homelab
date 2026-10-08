@@ -301,3 +301,59 @@ homelab/
 - `allowLoopDevices: true` enables OSDs backed by files in `/var/lib/rook`
 
 **GitHub:** github.com/zjpiazza/homelab
+
+---
+
+## Cluster recovery (October 8, 2026)
+
+### Repairs
+
+- **Hermes:** the former SHA image tag no longer exists in Docker Hub. Pin
+  `v2026.5.16` by multi-architecture digest for both the gateway and messaging
+  init container. Use Helm `install.strategy: RetryOnFailure` so a failed
+  install retries through upgrade rather than uninstalling the chart-owned PVC.
+  The existing 20Gi volume was retained.
+- **Inngest:** invoke the image's `inngest` executable explicitly, pass the
+  database URI with `--postgres-uri` rather than the SDK registration flag
+  `-u`, and remove unsupported `--no-discovery`. Disable Kubernetes service
+  links: injected `INNGEST_PORT=tcp://...` made the server bind to port zero.
+  Check the real `/health` endpoint for pod readiness.
+- **Inngest Postgres:** use `rook-ceph-block`, not nonexistent `ceph-block`.
+  With operator approval, replace the never-bound claim and restart the
+  never-completed initial bootstrap. CNPG retains its allocated node serial
+  after bootstrap-job removal; resetting that serial was safe here only
+  because no database had initialized and no database data existed.
+  Do not use this procedure on an initialized database; restore from backup.
+- **Flux image automation:** the referenced release asset does not exist.
+  Vendor only the official Flux v2.8.0 image-controller CRDs, ServiceAccounts,
+  and Deployments; source checksum and extraction provenance are in
+  `infrastructure/controllers/flux-image-automation/components.yaml`.
+  Existing bootstrap RBAC already includes both controllers. Wait for resource
+  health when reconciling the image-automation Kustomization.
+
+### Live verification
+
+- Hermes Helm upgrade succeeded, both init containers completed, gateway pod
+  became ready, and the original PVC's backing PV was unchanged.
+- Telegram `getMe` and OpenRouter key authentication returned HTTP 200.
+- Inngest Postgres became ready; a transactional create/insert/select/rollback
+  smoke check succeeded. Inngest `/health` and dashboard returned HTTP 200.
+- Both Flux image-controller Deployments rolled out and their three CRDs
+  became Established.
+
+### Sandherd credential bootstrap
+
+Sandherd's coordinator reports `credential_not_bootstrapped` because its
+platform `auth.json` is absent. Its Bound PVC and readiness probe are correct;
+operator authorization is required, not a restart or probe change.
+
+Run the owning project's helper in a trusted interactive terminal:
+
+```sh
+KUBE_CONTEXT=admin@homelab ../agent-sandbox/scripts/bootstrap-codex-auth.sh
+```
+
+Authorize the intended platform ChatGPT account, then verify the coordinator's
+rollout and `codex-auth status`. Do not copy workstation credentials, expose
+tokens, or share refresh authority with another client. The owning project's
+`docs/codex.md` documents the lifecycle and authentication requirements.

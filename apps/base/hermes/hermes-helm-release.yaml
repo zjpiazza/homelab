@@ -21,8 +21,11 @@ spec:
       reconcileStrategy: Revision
   install:
     crds: CreateReplace
-    remediation:
-      retries: 2
+    # Retry failed installs via upgrade; uninstall remediation would delete
+    # the chart-owned data PVC, which has no Helm keep policy.
+    strategy:
+      name: RetryOnFailure
+      retryInterval: 5m
   upgrade:
     crds: CreateReplace
     remediation:
@@ -35,7 +38,9 @@ spec:
 
     image:
       repository: nousresearch/hermes-agent
-      tag: "sha-9ed751b96706ffd343ae26531cd0e2152a1c7036"
+      # Nearest published release after the former 2026-05-14 SHA tag.
+      # Pin the multi-arch digest: upstream no longer publishes that SHA tag.
+      tag: "v2026.5.16@sha256:b6e41c155d6bfce5ad83c5d0fec670086db8a43250e4511c9474134be5482d33"
       pullPolicy: IfNotPresent
 
     # --- Secrets: managed out-of-band via kubectl ---
@@ -74,22 +79,17 @@ spec:
       SLACK_ALLOWED_USERS: ""
       SIGNAL_ALLOWED_USERS: ""
       SIGNAL_GROUP_ALLOWED_USERS: ""
-      # Tell Python to find messaging-platform packages installed by the
-      # install-messaging-deps initContainer below into the PVC. The
-      # upstream image deliberately excludes messaging deps from its
-      # [all] extras group (see hermes-agent pyproject.toml comment dated
-      # 2026-05-12), and the gateway's Telegram adapter import path does
-      # NOT invoke tools/lazy_deps.ensure() -- so without this, Telegram
-      # silently disables with "python-telegram-bot not installed".
+      # Load Telegram dependencies from the PVC. The image's [all] extra
+      # excludes messaging packages, and runtime lazy installation cannot
+      # write into /opt/hermes/.venv with the chart's read-only root filesystem.
       PYTHONPATH: "/opt/data/python-packages"
 
     # --- Install messaging platform Python deps into the PVC ---
-    # Idempotent: uv pip install --target is a no-op when packages are
-    # already present at the matching version. Re-runs only when the PVC
-    # is fresh or the spec version below changes.
+    # Keep this image aligned with image.tag above. The selected release
+    # includes uv and requires python-telegram-bot[webhooks]==22.6.
     extraInitContainers:
       - name: install-messaging-deps
-        image: nousresearch/hermes-agent:sha-9ed751b96706ffd343ae26531cd0e2152a1c7036
+        image: nousresearch/hermes-agent:v2026.5.16@sha256:b6e41c155d6bfce5ad83c5d0fec670086db8a43250e4511c9474134be5482d33
         imagePullPolicy: IfNotPresent
         command: ["/bin/sh", "-ec"]
         args:
@@ -106,10 +106,8 @@ spec:
         env:
           - name: HOME
             value: /opt/data/home
-          # The bootstrap-config initContainer (runs first, as root by
-          # default) creates /opt/data/home/.cache subdirs that uv (running
-          # as uid 10000 here) can't write into. Pin uv's cache to /tmp
-          # (its own emptyDir mount, always writable) to avoid EACCES.
+          # Keep uv's cache in the writable tmp volume rather than HOME,
+          # which is also used by the chart's bootstrap and main containers.
           - name: UV_CACHE_DIR
             value: /tmp/uv-cache
         volumeMounts:
